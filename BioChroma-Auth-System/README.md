@@ -22,6 +22,8 @@
 - 时间戳防重放攻击
 - 动态变化防截图伪造
 
+> **⚠️ 安全警告**：生产环境部署前必须配置自定义加密密钥！详见 [SECURITY.md](SECURITY.md)
+
 ### 🌍 真正的跨平台
 | 平台 | 支持状态 | 特性 |
 |------|---------|------|
@@ -31,6 +33,29 @@
 | Android 8+ | ✅ 完全支持 | Vulkan加速 |
 | iOS 13+ | ✅ 完全支持 | Metal加速 |
 | Web (WASM) | ⚠️  部分支持 | 仅扫码功能 |
+
+---
+
+## 🔐 安全配置（生产环境必读）
+
+**🚨 重要**：默认配置仅适用于开发和测试。生产环境部署前请完成以下配置：
+
+```bash
+# 1. 生成安全密钥
+openssl rand -base64 32
+
+# 2. 设置环境变量
+export BIOCHROMA_KEY="your-generated-key-here"
+
+# 3. 验证配置（应该看不到WARNING信息）
+dotnet run --project src/BioChroma.Desktop
+```
+
+**详细安全指南**: 请阅读 [SECURITY.md](SECURITY.md) 了解：
+- 加密密钥管理最佳实践
+- 生产环境部署检查清单
+- 已知安全限制
+- 漏洞报告流程
 
 ---
 

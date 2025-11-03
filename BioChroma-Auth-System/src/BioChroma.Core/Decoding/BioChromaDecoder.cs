@@ -17,9 +17,32 @@ namespace BioChroma.Core.Decoding
     public class BioChromaDecoder : IDecoder
     {
         private const int TIMESTAMP_TOLERANCE_SECONDS = 30; // Allow 30 second time window
+        private readonly string _encryptionKey;
+
+        /// <summary>
+        /// Creates a new BioChromaDecoder with a custom encryption key
+        /// </summary>
+        /// <param name="encryptionKey">Encryption key for decrypting data. Must match the encoder's key. If null, will attempt to read from environment variable BIOCHROMA_KEY</param>
+        public BioChromaDecoder(string? encryptionKey = null)
+        {
+            _encryptionKey = encryptionKey
+                ?? Environment.GetEnvironmentVariable("BIOCHROMA_KEY")
+                ?? "BioChromaDefaultKey"; // WARNING: Default key is insecure for production use!
+
+            if (_encryptionKey == "BioChromaDefaultKey")
+            {
+                System.Diagnostics.Debug.WriteLine("WARNING: Using default encryption key. Set BIOCHROMA_KEY environment variable or pass custom key for production use.");
+            }
+        }
 
         public async Task<VerificationResult> DecodeAsync(BioChromaCode code)
         {
+            // Input validation
+            if (code == null)
+                throw new ArgumentNullException(nameof(code));
+            if (code.Particles == null || code.ParticleCount == 0)
+                throw new ArgumentException("Code must contain particles", nameof(code));
+
             var stopwatch = Stopwatch.StartNew();
 
             try
@@ -149,11 +172,16 @@ namespace BioChroma.Core.Decoding
 
         private async Task<byte[]> DecryptDataAsync(byte[] encrypted)
         {
+            if (encrypted == null)
+                throw new ArgumentNullException(nameof(encrypted));
+            if (encrypted.Length < 16)
+                throw new ArgumentException("Encrypted data is too short to contain IV", nameof(encrypted));
+
             return await Task.Run(() =>
             {
                 using (var aes = Aes.Create())
                 {
-                    aes.Key = DeriveKey("BioChromaDefaultKey"); // Must match encoder
+                    aes.Key = DeriveKey(_encryptionKey);
 
                     // Extract IV (first 16 bytes)
                     var iv = new byte[16];

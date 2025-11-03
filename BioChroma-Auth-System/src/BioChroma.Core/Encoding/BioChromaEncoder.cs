@@ -15,12 +15,36 @@ namespace BioChroma.Core.Encoding
     /// </summary>
     public class BioChromaEncoder : IEncoder
     {
-        private readonly Random _random = new Random();
         private const int DEFAULT_PARTICLE_COUNT = 256;
         private const float PARTICLE_SPREAD = 0.8f; // Particles use 80% of the space
+        private const int MAX_DATA_SIZE = 10 * 1024 * 1024; // 10MB limit to prevent DoS
+        private readonly string _encryptionKey;
+
+        /// <summary>
+        /// Creates a new BioChromaEncoder with a custom encryption key
+        /// </summary>
+        /// <param name="encryptionKey">Encryption key for securing data. If null, will attempt to read from environment variable BIOCHROMA_KEY</param>
+        public BioChromaEncoder(string? encryptionKey = null)
+        {
+            _encryptionKey = encryptionKey
+                ?? Environment.GetEnvironmentVariable("BIOCHROMA_KEY")
+                ?? "BioChromaDefaultKey"; // WARNING: Default key is insecure for production use!
+
+            if (_encryptionKey == "BioChromaDefaultKey")
+            {
+                // Log warning in production scenarios
+                System.Diagnostics.Debug.WriteLine("WARNING: Using default encryption key. Set BIOCHROMA_KEY environment variable or pass custom key for production use.");
+            }
+        }
 
         public async Task<BioChromaCode> EncodeAsync(BiometricFeatures features, string userId)
         {
+            // Input validation
+            if (features == null)
+                throw new ArgumentNullException(nameof(features));
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new ArgumentException("User ID cannot be null or empty", nameof(userId));
+
             // Create payload
             var payload = new
             {
@@ -41,6 +65,14 @@ namespace BioChroma.Core.Encoding
 
         public async Task<BioChromaCode> EncodeDataAsync(byte[] data, BiometricFeatures? features = null)
         {
+            // Input validation
+            if (data == null)
+                throw new ArgumentNullException(nameof(data));
+            if (data.Length == 0)
+                throw new ArgumentException("Data cannot be empty", nameof(data));
+            if (data.Length > MAX_DATA_SIZE)
+                throw new ArgumentException($"Data size exceeds maximum allowed size of {MAX_DATA_SIZE} bytes", nameof(data));
+
             return await Task.Run(() =>
             {
                 var code = new BioChromaCode
@@ -161,18 +193,20 @@ namespace BioChroma.Core.Encoding
         private string GenerateNonce()
         {
             var bytes = new byte[16];
-            _random.NextBytes(bytes);
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(bytes);
+            }
             return Convert.ToBase64String(bytes);
         }
 
         private async Task<byte[]> EncryptDataAsync(byte[] data)
         {
-            // Simple AES encryption (in production, use proper key management)
             return await Task.Run(() =>
             {
                 using (var aes = Aes.Create())
                 {
-                    aes.Key = DeriveKey("BioChromaDefaultKey"); // TODO: Use proper key management
+                    aes.Key = DeriveKey(_encryptionKey);
                     aes.GenerateIV();
 
                     using (var encryptor = aes.CreateEncryptor())

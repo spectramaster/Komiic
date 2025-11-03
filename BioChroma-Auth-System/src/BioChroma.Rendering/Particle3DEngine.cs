@@ -8,8 +8,9 @@ namespace BioChroma.Rendering
     /// 3D particle rendering engine
     /// Handles transformation, animation, and rendering of particle clouds
     /// </summary>
-    public class Particle3DEngine
+    public class Particle3DEngine : IDisposable
     {
+        private bool _disposed = false;
         private float _rotationAngle = 0f;
         private float _breathingPhase = 0f;
         private DateTime _startTime = DateTime.UtcNow;
@@ -25,7 +26,19 @@ namespace BioChroma.Rendering
         /// </summary>
         public void Render(SKCanvas canvas, BioChromaCode code, int width, int height)
         {
-            if (code == null || code.Particles.Count == 0)
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(Particle3DEngine));
+
+            if (canvas == null)
+                throw new ArgumentNullException(nameof(canvas));
+
+            if (code == null)
+                throw new ArgumentNullException(nameof(code));
+
+            if (width <= 0 || height <= 0)
+                throw new ArgumentException("Width and height must be positive");
+
+            if (code.Particles.Count == 0)
                 return;
 
             // Update animation state
@@ -142,7 +155,7 @@ namespace BioChroma.Rendering
                 IsAntialias = true
             })
             {
-                glowPaint.Shader = SKShader.CreateRadialGradient(
+                using (var shader = SKShader.CreateRadialGradient(
                     new SKPoint(x, y),
                     size * 1.5f,
                     new[] {
@@ -151,9 +164,11 @@ namespace BioChroma.Rendering
                     },
                     new[] { 0.3f, 1.0f },
                     SKShaderTileMode.Clamp
-                );
-
-                canvas.DrawCircle(x, y, size * 1.5f, glowPaint);
+                ))
+                {
+                    glowPaint.Shader = shader;
+                    canvas.DrawCircle(x, y, size * 1.5f, glowPaint);
+                }
             }
 
             // Draw core
@@ -169,8 +184,12 @@ namespace BioChroma.Rendering
             float rotX = x * cosY - z * sinY;
             float rotZ = x * sinY + z * cosY;
 
-            // Simple perspective projection
-            float perspective = 1.0f / (1.0f + rotZ * 0.5f);
+            // Simple perspective projection with safety check
+            float denominator = 1.0f + rotZ * 0.5f;
+            if (Math.Abs(denominator) < 0.01f)
+                denominator = 0.01f; // Prevent division by zero
+
+            float perspective = 1.0f / denominator;
             return (rotX * perspective, y * perspective, rotZ);
         }
 
@@ -236,6 +255,26 @@ namespace BioChroma.Rendering
             _startTime = DateTime.UtcNow;
             _rotationAngle = 0f;
             _breathingPhase = 0f;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // Dispose managed resources
+                    // Currently no managed resources to dispose
+                }
+
+                _disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

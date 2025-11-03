@@ -46,7 +46,16 @@ namespace BioChroma.Rendering
         /// </summary>
         public new void Render(SKCanvas canvas, BioChromaCode code, int width, int height)
         {
-            if (code == null || code.Particles.Count == 0)
+            if (canvas == null)
+                throw new ArgumentNullException(nameof(canvas));
+            if (code == null)
+                throw new ArgumentNullException(nameof(code));
+            if (width <= 0)
+                throw new ArgumentOutOfRangeException(nameof(width), "Width must be positive");
+            if (height <= 0)
+                throw new ArgumentOutOfRangeException(nameof(height), "Height must be positive");
+
+            if (code.Particles.Count == 0)
                 return;
 
             // Clear batch buffer
@@ -175,7 +184,12 @@ namespace BioChroma.Rendering
             float rotX = x * cosY - z * sinY;
             float rotZ = x * sinY + z * cosY;
 
-            float perspective = 1.0f / (1.0f + rotZ * 0.5f);
+            // Prevent division by zero
+            float denominator = 1.0f + rotZ * 0.5f;
+            if (MathF.Abs(denominator) < 0.01f)
+                denominator = 0.01f;
+
+            float perspective = 1.0f / denominator;
             return (rotX * perspective, y * perspective, rotZ);
         }
 

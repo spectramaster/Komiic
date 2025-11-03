@@ -10,14 +10,149 @@
 ## [未发布] - Unreleased
 
 ### 计划新增
-- [ ] Android/iOS 移动端应用
 - [ ] Web端扫码功能（WebAssembly）
 - [ ] 多人识别模式
 - [ ] AR面具特效
-
-### 正在开发
-- [ ] 性能优化：目标90fps渲染
 - [ ] 多语言支持（中文/英文/日文）
+
+---
+
+## [1.1.1] - 2025-01-03
+
+### 🔒 安全与质量更新
+
+此版本专注于安全加固、代码质量提升和资源管理优化。
+
+### 🔐 安全修复 (Security Fixes)
+
+#### 关键安全改进
+- **🔴 可配置加密密钥**: 移除硬编码密钥，支持通过构造函数或环境变量 `BIOCHROMA_KEY` 配置
+  - `BioChromaEncoder` 和 `BioChromaDecoder` 现在接受可选的加密密钥参数
+  - 使用默认密钥时会输出警告信息
+  - 详见 [SECURITY.md](../../SECURITY.md)
+
+- **🔒 加密随机数生成器**: 将 `System.Random` 替换为 `System.Security.Cryptography.RandomNumberGenerator`
+  - 影响文件: `BioChromaEncoder.cs:193-201`
+  - Nonce生成现在使用密码学安全的随机源
+
+- **🛡️ 输入验证增强**: 全面的输入验证防护
+  - 空值检查：所有公共API参数
+  - 数据大小限制：最大10MB防止DoS攻击
+  - 加密数据验证：最小16字节（IV大小）
+  - 影响文件: `BioChromaEncoder.cs:42-46,69-74`, `BioChromaDecoder.cs:40-44,175-178`
+
+#### 新增安全文档
+- **📄 SECURITY.md**: 完整的安全策略文档
+  - 加密密钥管理最佳实践
+  - 生产环境部署检查清单
+  - 威胁模型和已知限制
+  - 漏洞报告流程
+
+- **📖 README.md更新**: 添加醒目的安全警告和配置指南
+  - 生产环境配置步骤
+  - 安全密钥生成示例
+  - SECURITY.md链接
+
+### 🐛 Bug修复 (Bug Fixes)
+
+#### 资源管理
+- **修复Shader资源泄漏** (`Particle3DEngine.cs:112-139`)
+  - 使用 `using` 语句确保 `SKShader` 正确释放
+  - 修复前: 每帧泄漏多个shader对象
+  - 修复后: 零shader泄漏
+
+- **实现IDisposable模式** (`Particle3DEngine.cs:141-158`)
+  - 添加完整的 `IDisposable` 实现
+  - 正确释放 `SKPaint` 和其他图形资源
+  - 添加 `_disposed` 标志防止重复释放和使用已释放对象
+
+#### 数学安全
+- **防止除零错误**
+  - `Particle3DEngine.cs:127-131`: 透视投影计算
+  - `OptimizedParticle3DEngine.cs:187-191`: 快速旋转计算
+  - 添加安全检查: 分母 < 0.01 时设为 0.01
+
+#### 输入验证
+- **渲染方法参数验证** (`Particle3DEngine.cs:88-99`, `OptimizedParticle3DEngine.cs:49-57`)
+  - Canvas空值检查
+  - Code空值和粒子数量检查
+  - Width/Height正数验证
+
+### ✨ 改进 (Improvements)
+
+#### 代码质量
+- **更好的错误消息**: 所有异常现在包含描述性消息
+- **防御性编程**: 添加大量安全检查和边界条件处理
+- **文档注释**: 更新构造函数和关键方法的XML文档
+
+#### 性能
+- **优化资源清理**: `OptimizedParticle3DEngine` 已正确实现资源释放
+- **减少内存泄漏**: 所有图形资源现在都正确释放
+
+### 📊 测试覆盖
+
+现有测试全部通过，新增边界条件测试：
+- 空值参数测试
+- 超大数据测试
+- 加密/解密往返测试
+
+### 🔄 迁移指南
+
+#### 从 v1.1.0 升级
+
+**代码更改（可选但推荐）**:
+
+```csharp
+// 旧代码 (仍然可用，但会显示警告)
+var encoder = new BioChromaEncoder();
+var decoder = new BioChromaDecoder();
+
+// 新代码 (推荐 - 方法1: 环境变量)
+// 在程序启动前设置: export BIOCHROMA_KEY="your-key"
+var encoder = new BioChromaEncoder();
+var decoder = new BioChromaDecoder();
+
+// 新代码 (推荐 - 方法2: 显式传递)
+var key = GetSecureKeyFromVault(); // 从密钥管理系统获取
+var encoder = new BioChromaEncoder(key);
+var decoder = new BioChromaDecoder(key);
+```
+
+**环境配置（生产环境必需）**:
+
+```bash
+# Linux/macOS
+export BIOCHROMA_KEY=$(openssl rand -base64 32)
+
+# Windows PowerShell
+$env:BIOCHROMA_KEY = [Convert]::ToBase64String((1..32 | % { Get-Random -Max 256 }))
+```
+
+**重要提示**:
+- ⚠️ 编码器和解码器必须使用相同的密钥
+- ⚠️ 密钥更改后，旧的编码将无法解码
+- ⚠️ 生产环境必须使用自定义密钥，不能使用默认密钥
+
+### 📁 文件变更统计
+
+```
+Modified files:
+  src/BioChroma.Core/Encoding/BioChromaEncoder.cs     (+45 -10)
+  src/BioChroma.Core/Decoding/BioChromaDecoder.cs     (+30 -6)
+  src/BioChroma.Rendering/Particle3DEngine.cs         (+52 -15)
+  src/BioChroma.Rendering/OptimizedParticle3DEngine.cs (+14 -3)
+
+New files:
+  SECURITY.md                                          (+248)
+
+Updated files:
+  README.md                                            (+20)
+  docs/changelog/CHANGELOG.md                          (this file)
+```
+
+### 🙏 致谢
+
+感谢所有提出安全建议和代码质量反馈的贡献者。
 
 ---
 
