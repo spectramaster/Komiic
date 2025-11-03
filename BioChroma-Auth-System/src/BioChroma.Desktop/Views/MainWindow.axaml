@@ -1,0 +1,99 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="BioChroma.Desktop.Views.MainWindow"
+        Title="BioChroma - 3D Authentication System"
+        Width="800" Height="600"
+        MinWidth="600" MinHeight="400">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#1a1a2e" Padding="20">
+            <TextBlock Text="🌈 BioChroma 3D Auth"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       Foreground="White"
+                       HorizontalAlignment="Center"/>
+        </Border>
+
+        <!-- Content -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" Margin="20">
+            <!-- Generator Panel -->
+            <Border Grid.Column="0"
+                    Background="#16213e"
+                    CornerRadius="10"
+                    Padding="20"
+                    Margin="0,0,10,0">
+                <StackPanel Spacing="15">
+                    <TextBlock Text="📷 Generate Code"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Foreground="White"/>
+
+                    <TextBlock Text="Use your camera to generate a unique 3D verification code"
+                               TextWrapping="Wrap"
+                               Foreground="#b8b8b8"/>
+
+                    <Button Content="🎬 Start Generation"
+                            HorizontalAlignment="Stretch"
+                            Padding="15"
+                            FontSize="16"
+                            Background="#0f3460"
+                            Foreground="White"/>
+
+                    <Border Background="#0a0a0a"
+                            Height="300"
+                            CornerRadius="5"
+                            BorderBrush="#333"
+                            BorderThickness="1">
+                        <TextBlock Text="Camera preview will appear here"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Foreground="#666"/>
+                    </Border>
+
+                    <TextBlock Text="Status: Ready"
+                               Foreground="#4ecca3"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Scanner Panel -->
+            <Border Grid.Column="1"
+                    Background="#16213e"
+                    CornerRadius="10"
+                    Padding="20"
+                    Margin="10,0,0,0">
+                <StackPanel Spacing="15">
+                    <TextBlock Text="🔍 Scan Code"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Foreground="White"/>
+
+                    <TextBlock Text="Scan a 3D code to verify identity"
+                               TextWrapping="Wrap"
+                               Foreground="#b8b8b8"/>
+
+                    <Button Content="🔐 Start Scanning"
+                            HorizontalAlignment="Stretch"
+                            Padding="15"
+                            FontSize="16"
+                            Background="#0f3460"
+                            Foreground="White"/>
+
+                    <Border Background="#0a0a0a"
+                            Height="300"
+                            CornerRadius="5"
+                            BorderBrush="#333"
+                            BorderThickness="1">
+                        <TextBlock Text="3D code will render here"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Foreground="#666"/>
+                    </Border>
+
+                    <TextBlock Text="Status: Waiting for code"
+                               Foreground="#888"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

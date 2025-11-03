@@ -1,0 +1,92 @@
+# BioChroma .gitignore
+
+## .NET Core
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.dll
+*.pdb
+*.exe
+!scripts/*.exe
+
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio
+.vs/
+.vscode/
+*.vsidx
+*.vspscc
+*.vsp
+*.vspx
+
+## Rider
+.idea/
+*.sln.iml
+
+## macOS
+.DS_Store
+*.dmg
+*.pkg
+
+## Avalonia
+*.avalonia
+
+## Output
+dist/
+publish/
+*.tar.gz
+*.zip
+
+## User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Temporary files
+tmp/
+temp/
+
+## Test results
+TestResults/
+*.trx
+*.coverage
+
+## NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+
+## Secrets (IMPORTANT!)
+*secrets.json
+*.key
+*.pem
+.env
+
+## Logs
+*.log
+logs/
+
+## Documentation build
+docs/_site/
+docs/.jekyll-cache/
+
+## Benchmarks
+BenchmarkDotNet.Artifacts/

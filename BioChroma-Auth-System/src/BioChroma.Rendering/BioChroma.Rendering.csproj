@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <Version>1.0.0</Version>
+    <Authors>BioChroma Team</Authors>
+    <Description>3D particle rendering engine for BioChroma codes</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="2.88.8" />
+    <ProjectReference Include="..\BioChroma.Core\BioChroma.Core.csproj" />
+  </ItemGroup>
+
+</Project>

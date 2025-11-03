@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <Version>1.0.0</Version>
+    <Authors>BioChroma Team</Authors>
+    <Description>Cross-platform camera access for BioChroma system</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenCvSharp4" Version="4.10.0.20240616" />
+    <PackageReference Include="OpenCvSharp4.runtime.ubuntu.22.04-x64" Version="4.10.0.20240616" Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.10.0.20240616" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+    <PackageReference Include="OpenCvSharp4.runtime.osx.10.15-x64" Version="4.10.0.20240616" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+    <ProjectReference Include="..\BioChroma.Core\BioChroma.Core.csproj" />
+  </ItemGroup>
+
+</Project>
